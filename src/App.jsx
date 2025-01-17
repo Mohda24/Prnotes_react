@@ -44,6 +44,7 @@ function App() {
       setIsLoggedIn(true);
       fetchNotes();
       fetchUsers();
+      
     }
   }, [token]);
 
@@ -53,6 +54,8 @@ function App() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotes(response.data);
+      console.log(response.data);
+      
     } catch (error) {
       console.error("Error fetching notes:", error);
     }
@@ -64,6 +67,7 @@ function App() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
+      console.log(response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -97,13 +101,13 @@ function App() {
       if (editingNote) {
         await axios.put(
           `https://notes.devlop.tech/api/notes/${editingNote.id}`,
-          { title: noteTitle, content: noteContent, user_id: userId },
+          { title: noteTitle, content: noteContent, shared_with: [userId] },
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         await axios.post(
           "https://notes.devlop.tech/api/notes",
-          { title: noteTitle, content: noteContent, user_id: userId },
+          { title: noteTitle, content: noteContent, shared_with: [userId] },
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
@@ -113,6 +117,7 @@ function App() {
       setNoteContent("");
       setSelectedUser("");
       setEditingNote(null);
+      
     } catch (error) {
       console.error("Error saving note:", error);
     }
@@ -135,6 +140,7 @@ function App() {
     setNoteContent(note.content);
     setSelectedUser(note.user_id || "");
     setDialogOpen(true);
+    
   };
 
   return (
@@ -186,16 +192,14 @@ function App() {
                   </TableHead>
                   <TableBody>
                     {notes.map((note) => {
-                      const assignedUser = users.find(
-                        (user) => user.id === note.user_id
-                      );
+                      
                       return (
                         <TableRow key={note.id}>
                           <TableCell>{note.title}</TableCell>
                           <TableCell>{note.content}</TableCell>
                           <TableCell>
-                            {assignedUser
-                              ? `${assignedUser.first_name} ${assignedUser.last_name}`
+                            {note.shared_with.length > 0 
+                              ? `${note.shared_with[0].first_name} ${note.shared_with[0].last_name}`
                               : "Not Assigned"}
                           </TableCell>
 
